@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>航空登机广播系统</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -98,6 +101,18 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
 </style>
 </head>
 <body>
+<script>
+// 缓存检测：如果加载的不是最新版本，强制刷新
+window.__APP_VERSION = "v250531.4";
+(function(){
+  var pv = localStorage.getItem("__boarding_app_ver");
+  if (pv && pv !== window.__APP_VERSION) {
+    localStorage.setItem("__boarding_app_ver", window.__APP_VERSION);
+    location.reload(true);
+  }
+  localStorage.setItem("__boarding_app_ver", window.__APP_VERSION);
+})();
+</script>
 <div class="sidebar">
   <div class="logo"><span>&#9992;</span> BoardCast</div>
   <div class="nav-group">
@@ -120,7 +135,7 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
 </div>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 <div class="main">
-  <div class="header"><button class="hamburger" onclick="toggleSidebar()" style="display:none">&#9776;</button><button class="btn-import-mobile" onclick="openImportModal()" style="display:none">&#128194;</button><h2 id="pageTitle">&#128747; 登机广播</h2><span class="badge" id="airlineBadge">未选择航司</span></div>
+  <div class="header"><button class="hamburger" onclick="toggleSidebar()" style="display:none">&#9776;</button><button class="btn-import-mobile" onclick="openImportModal()" style="display:none">&#128194;</button><h2 id="pageTitle">&#128747; 登机广播</h2><span class="badge" id="airlineBadge">未选择航司</span><span style="font-size:9px;color:var(--border);margin-left:auto;opacity:0.6">v250531.4</span></div>
   <div class="content">
     <div class="card" id="cardFlightInfo">
       <h3 onclick="toggleCard('cardFlightInfo')">&#128203; 航班信息 <span class="arrow open">&#9654;</span></h3>
@@ -173,7 +188,7 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
   <div class="status-bar">
     <span><span class="status-dot dot-ready" id="statusDot"></span><span id="statusText">就绪</span></span>
     <span id="clockDisplay"></span>
-    <span style="font-size:9px;color:var(--border)">v250531.3</span>
+    <span style="font-size:9px;color:var(--border)">v250531.4</span>
   </div>
 </div>
 <div class="modal-overlay" id="importModal">
