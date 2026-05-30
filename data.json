@@ -1,1 +1,494 @@
-[]
+[
+  {
+    "flightNo": "CZ0343",
+    "airlineCode": "",
+    "destination": "MEL",
+    "gate": "A154"
+  },
+  {
+    "flightNo": "CZ0301",
+    "airlineCode": "",
+    "destination": "SYD",
+    "gate": "A155"
+  },
+  {
+    "flightNo": "CZ3091",
+    "airlineCode": "",
+    "destination": "MNL",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ3037",
+    "airlineCode": "",
+    "destination": "CGK",
+    "gate": "A148"
+  },
+  {
+    "flightNo": "CZ0357",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A145"
+  },
+  {
+    "flightNo": "CZ3055",
+    "airlineCode": "",
+    "destination": "RGN",
+    "gate": "A70"
+  },
+  {
+    "flightNo": "CZ0353",
+    "airlineCode": "",
+    "destination": "SIN",
+    "gate": "A168"
+  },
+  {
+    "flightNo": "CZ0349",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A152"
+  },
+  {
+    "flightNo": "CZ6067",
+    "airlineCode": "",
+    "destination": "KTM",
+    "gate": "A66"
+  },
+  {
+    "flightNo": "CZ8313",
+    "airlineCode": "",
+    "destination": "KTI",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ8159",
+    "airlineCode": "",
+    "destination": "SGN",
+    "gate": "A172"
+  },
+  {
+    "flightNo": "CZ0385",
+    "airlineCode": "",
+    "destination": "HND",
+    "gate": "A63"
+  },
+  {
+    "flightNo": "CZ3049",
+    "airlineCode": "",
+    "destination": "HAN",
+    "gate": "A68"
+  },
+  {
+    "flightNo": "CZ8027",
+    "airlineCode": "",
+    "destination": "SVO",
+    "gate": "A149"
+  },
+  {
+    "flightNo": "CZ3047",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A153"
+  },
+  {
+    "flightNo": "CZ0389",
+    "airlineCode": "",
+    "destination": "KIX",
+    "gate": "A50"
+  },
+  {
+    "flightNo": "CZ0337",
+    "airlineCode": "",
+    "destination": "ICN",
+    "gate": "A150"
+  },
+  {
+    "flightNo": "CZ5015",
+    "airlineCode": "",
+    "destination": "DAC",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ8079",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A146"
+  },
+  {
+    "flightNo": "CZ0635",
+    "airlineCode": "",
+    "destination": "BNE",
+    "gate": "A147"
+  },
+  {
+    "flightNo": "CZ0377",
+    "airlineCode": "",
+    "destination": "MAD",
+    "gate": "A170"
+  },
+  {
+    "flightNo": "CZ8099",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A61"
+  },
+  {
+    "flightNo": "CZ3061",
+    "airlineCode": "",
+    "destination": "ICN",
+    "gate": "A50"
+  },
+  {
+    "flightNo": "CZ3097",
+    "airlineCode": "",
+    "destination": "TPE",
+    "gate": "A155"
+  },
+  {
+    "flightNo": "CZ8011",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A145"
+  },
+  {
+    "flightNo": "SU0221",
+    "airlineCode": "",
+    "destination": "SVO",
+    "gate": "A152"
+  },
+  {
+    "flightNo": "CZ5095",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ8347",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A168"
+  },
+  {
+    "flightNo": "CZ3081",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A148"
+  },
+  {
+    "flightNo": "KE0868",
+    "airlineCode": "",
+    "destination": "ICN",
+    "gate": "A147"
+  },
+  {
+    "flightNo": "CZ0373",
+    "airlineCode": "",
+    "destination": "SGN",
+    "gate": "A144"
+  },
+  {
+    "flightNo": "CZ3039",
+    "airlineCode": "",
+    "destination": "SIN",
+    "gate": "A173"
+  },
+  {
+    "flightNo": "CZ8301",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ6059",
+    "airlineCode": "",
+    "destination": "KTI",
+    "gate": "A155"
+  },
+  {
+    "flightNo": "CZ6091",
+    "airlineCode": "",
+    "destination": "VTE",
+    "gate": "A172"
+  },
+  {
+    "flightNo": "SQ0851",
+    "airlineCode": "",
+    "destination": "SIN",
+    "gate": "A152"
+  },
+  {
+    "flightNo": "CZ6049",
+    "airlineCode": "",
+    "destination": "CXR",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ0303",
+    "airlineCode": "",
+    "destination": "LHR",
+    "gate": "A169"
+  },
+  {
+    "flightNo": "CZ0655",
+    "airlineCode": "",
+    "destination": "SVO",
+    "gate": "A154"
+  },
+  {
+    "flightNo": "CZ5047",
+    "airlineCode": "",
+    "destination": "PEN",
+    "gate": "A146"
+  },
+  {
+    "flightNo": "CZ0397",
+    "airlineCode": "",
+    "destination": "MNL",
+    "gate": "A153"
+  },
+  {
+    "flightNo": "JL0088",
+    "airlineCode": "",
+    "destination": "HND",
+    "gate": "A151"
+  },
+  {
+    "flightNo": "MH0377",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A149"
+  },
+  {
+    "flightNo": "CZ8023",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A167"
+  },
+  {
+    "flightNo": "CZ3085",
+    "airlineCode": "",
+    "destination": "HND",
+    "gate": "A148"
+  },
+  {
+    "flightNo": "CZ8335",
+    "airlineCode": "",
+    "destination": "BKI",
+    "gate": "A144"
+  },
+  {
+    "flightNo": "VN0503",
+    "airlineCode": "",
+    "destination": "SGN",
+    "gate": "A145"
+  },
+  {
+    "flightNo": "CZ3053",
+    "airlineCode": "",
+    "destination": "TAS",
+    "gate": "A173"
+  },
+  {
+    "flightNo": "SV0885",
+    "airlineCode": "",
+    "destination": "RUH",
+    "gate": "A147"
+  },
+  {
+    "flightNo": "CZ5255",
+    "airlineCode": "",
+    "destination": "UPG",
+    "gate": "A153"
+  },
+  {
+    "flightNo": "TG0669",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A152"
+  },
+  {
+    "flightNo": "CZ0363",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A169"
+  },
+  {
+    "flightNo": "CZ3033",
+    "airlineCode": "",
+    "destination": "CNX",
+    "gate": "A154"
+  },
+  {
+    "flightNo": "CZ8089",
+    "airlineCode": "",
+    "destination": "IST",
+    "gate": "A155"
+  },
+  {
+    "flightNo": "VN0507",
+    "airlineCode": "",
+    "destination": "HAN",
+    "gate": "A146"
+  },
+  {
+    "flightNo": "CZ0395",
+    "airlineCode": "",
+    "destination": "PEN",
+    "gate": "A167"
+  },
+  {
+    "flightNo": "CZ8019",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A171"
+  },
+  {
+    "flightNo": "CZ6037",
+    "airlineCode": "",
+    "destination": "LHE",
+    "gate": "A168"
+  },
+  {
+    "flightNo": "CZ0339",
+    "airlineCode": "",
+    "destination": "ICN",
+    "gate": "A172"
+  },
+  {
+    "flightNo": "CZ8177",
+    "airlineCode": "",
+    "destination": "HAN",
+    "gate": "A148"
+  },
+  {
+    "flightNo": "CI0522",
+    "airlineCode": "",
+    "destination": "TPE",
+    "gate": "A149"
+  },
+  {
+    "flightNo": "CZ0365",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A145"
+  },
+  {
+    "flightNo": "CZ8137",
+    "airlineCode": "",
+    "destination": "SUB",
+    "gate": "A144"
+  },
+  {
+    "flightNo": "CZ0625",
+    "airlineCode": "",
+    "destination": "DPS",
+    "gate": "A153"
+  },
+  {
+    "flightNo": "CZ0311",
+    "airlineCode": "",
+    "destination": "YYZ",
+    "gate": "A60"
+  },
+  {
+    "flightNo": "CZ0387",
+    "airlineCode": "",
+    "destination": "CGK",
+    "gate": "A145"
+  },
+  {
+    "flightNo": "CZ0351",
+    "airlineCode": "",
+    "destination": "SIN",
+    "gate": "A146"
+  },
+  {
+    "flightNo": "CZ3067",
+    "airlineCode": "",
+    "destination": "KTM",
+    "gate": "A170"
+  },
+  {
+    "flightNo": "CZ0391",
+    "airlineCode": "",
+    "destination": "DAC",
+    "gate": "A171"
+  },
+  {
+    "flightNo": "CZ0367",
+    "airlineCode": "",
+    "destination": "SGN",
+    "gate": "A153"
+  },
+  {
+    "flightNo": "CZ3077",
+    "airlineCode": "",
+    "destination": "MNL",
+    "gate": "A144"
+  },
+  {
+    "flightNo": "CZ0325",
+    "airlineCode": "",
+    "destination": "SYD",
+    "gate": "A173"
+  },
+  {
+    "flightNo": "CZ8071",
+    "airlineCode": "",
+    "destination": "KUL",
+    "gate": "A145"
+  },
+  {
+    "flightNo": "CZ6043",
+    "airlineCode": "",
+    "destination": "CSX",
+    "gate": "B172,A302"
+  },
+  {
+    "flightNo": "CZ0381",
+    "airlineCode": "",
+    "destination": "BNE",
+    "gate": "A169"
+  },
+  {
+    "flightNo": "CZ8483",
+    "airlineCode": "",
+    "destination": "BKI",
+    "gate": "A170"
+  },
+  {
+    "flightNo": "CZ0321",
+    "airlineCode": "",
+    "destination": "MEL",
+    "gate": "A155"
+  },
+  {
+    "flightNo": "CZ0327",
+    "airlineCode": "",
+    "destination": "LAX",
+    "gate": "A154"
+  },
+  {
+    "flightNo": "CZ8489",
+    "airlineCode": "",
+    "destination": "SIN",
+    "gate": "A150"
+  },
+  {
+    "flightNo": "CZ0657",
+    "airlineCode": "",
+    "destination": "SFO",
+    "gate": "A168"
+  },
+  {
+    "flightNo": "CZ3035",
+    "airlineCode": "",
+    "destination": "BKK",
+    "gate": "A148"
+  },
+  {
+    "flightNo": "CZ5051",
+    "airlineCode": "",
+    "destination": "MNL",
+    "gate": "A172"
+  }
+]
