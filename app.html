@@ -103,7 +103,7 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
 <body>
 <script>
 // 缓存检测：如果加载的不是最新版本，强制刷新
-window.__APP_VERSION = "v250531.4";
+window.__APP_VERSION = "v250531.5";
 (function(){
   var pv = localStorage.getItem("__boarding_app_ver");
   if (pv && pv !== window.__APP_VERSION) {
@@ -135,7 +135,7 @@ window.__APP_VERSION = "v250531.4";
 </div>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 <div class="main">
-  <div class="header"><button class="hamburger" onclick="toggleSidebar()" style="display:none">&#9776;</button><button class="btn-import-mobile" onclick="openImportModal()" style="display:none">&#128194;</button><h2 id="pageTitle">&#128747; 登机广播</h2><span class="badge" id="airlineBadge">未选择航司</span><span style="font-size:9px;color:var(--border);margin-left:auto;opacity:0.6">v250531.4</span></div>
+  <div class="header"><button class="hamburger" onclick="toggleSidebar()" style="display:none">&#9776;</button><button class="btn-import-mobile" onclick="openImportModal()" style="display:none">&#128194;</button><h2 id="pageTitle">&#128747; 登机广播</h2><span class="badge" id="airlineBadge">未选择航司</span><span style="font-size:9px;color:var(--border);margin-left:auto;opacity:0.6">v250531.5</span></div>
   <div class="content">
     <div class="card" id="cardFlightInfo">
       <h3 onclick="toggleCard('cardFlightInfo')">&#128203; 航班信息 <span class="arrow open">&#9654;</span></h3>
@@ -188,7 +188,7 @@ window.__APP_VERSION = "v250531.4";
   <div class="status-bar">
     <span><span class="status-dot dot-ready" id="statusDot"></span><span id="statusText">就绪</span></span>
     <span id="clockDisplay"></span>
-    <span style="font-size:9px;color:var(--border)">v250531.4</span>
+    <span style="font-size:9px;color:var(--border)">v250531.5</span>
   </div>
 </div>
 <div class="modal-overlay" id="importModal">
@@ -717,8 +717,8 @@ speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
 const GITHUB_OWNER = "hao334058-sys";
 const GITHUB_REPO = "boarding-broadcast";
 const DATA_FILE = "data.json";
-// 使用 jsDelivr CDN 读取数据（国内有节点，比 github.io 更稳定）
-const RAW_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@main/${DATA_FILE}`;
+// 同域读取 data.json（与 HTML 同域名，不被墙）
+const RAW_URL = DATA_FILE;
 const API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`;
 
 function getToken() {
