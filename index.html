@@ -114,6 +114,7 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
     <div class="nav-label">航班数据</div>
     <button class="btn-import" onclick="openImportModal()">导入 Excel / CSV / JSON</button>
     <button class="btn-import" onclick="exportFlights()">导出航班数据</button>
+    <button class="btn-import" style="border-color:var(--accent2);color:var(--accent2)" onclick="syncToCloud()">☁ 同步到云端</button>
     <div class="flight-count" id="flightCount">未导入航班数据</div>
   </div>
 </div>
@@ -687,7 +688,76 @@ function selectFlight(idx){
 }
 function filterFlights(){renderFlightTable(document.getElementById("flightSearch").value);}
 speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
+
+// ── 云端同步 ──
+const GITHUB_OWNER = "hao334058-sys";
+const GITHUB_REPO = "boarding-broadcast";
+const DATA_FILE = "data.json";
+const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${DATA_FILE}`;
+const API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`;
+
+function getToken() {
+  return localStorage.getItem("gh_token") || "";
+}
+
+function setTokenUI() {
+  if (getToken()) return;
+  const t = prompt("请输入 GitHub Token 以启用云端同步（仅需设置一次）：", "");
+  if (t && t.trim()) { localStorage.setItem("gh_token", t.trim()); alert("Token 已保存，可以使用云端同步了！"); }
+}
+
+async function loadFromCloud() {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const resp = await fetch(RAW_URL + "?t=" + Date.now());
+    if (!resp.ok) return;
+    const cloudFlights = await resp.json();
+    if (!Array.isArray(cloudFlights) || !cloudFlights.length) return;
+    cloudFlights.forEach(f => {
+      f.flightNo = cleanFlightNo(f.flightNo || "");
+      f.destination = (f.destination || "").trim().toUpperCase();
+    });
+    const merged = new Map();
+    flights.forEach(f => merged.set(f.flightNo + "|" + f.destination, f));
+    cloudFlights.forEach(f => {
+      const k = f.flightNo + "|" + f.destination;
+      if (!merged.has(k)) merged.set(k, f);
+    });
+    flights = Array.from(merged.values());
+    saveFlightsToStorage();
+    renderFlightTable();
+    document.getElementById("statusText").textContent = `已从云端同步，共 ${flights.length} 条航班`;
+  } catch(e) { console.log("云端同步异常:", e); }
+}
+
+async function syncToCloud() {
+  const token = getToken();
+  if (!token) { setTokenUI(); if (!getToken()) return; }
+  if (!flights.length) { alert("没有航班数据可同步"); return; }
+  const statusEl = document.getElementById("statusText");
+  statusEl.textContent = "正在同步到云端...";
+  try {
+    let sha = null;
+    try {
+      const getResp = await fetch(API_URL, { headers: { Authorization: `token ${getToken()}` } });
+      if (getResp.ok) { const d = await getResp.json(); sha = d.sha; }
+    } catch(e) {}
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(flights, null, 2))));
+    const body = JSON.stringify({ message: `同步航班数据 - ${new Date().toLocaleString("zh-CN")}`, content, ...(sha ? { sha } : {}) });
+    const putResp = await fetch(API_URL, { method: "PUT", headers: { Authorization: `token ${getToken()}`, "Content-Type": "application/json" }, body });
+    if (putResp.ok) {
+      statusEl.textContent = `已同步 ${flights.length} 条航班到云端 ✓`;
+      setTimeout(() => { if (statusEl.textContent.includes("已同步")) statusEl.textContent = "就绪"; }, 3000);
+    } else {
+      const err = await putResp.json().catch(() => ({}));
+      throw new Error(err.message || "同步失败，请检查网络");
+    }
+  } catch(e) { statusEl.textContent = "同步失败: " + e.message; }
+}
+
 init();
+loadFromCloud();
 </script>
 </body>
 </html>
