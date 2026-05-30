@@ -150,7 +150,10 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
       </div>
     </div>
     <div class="card full" id="flightListCard">
-      <h3>&#128218; 今日航班列表 <span style="font-weight:400;font-size:10px;margin-left:8px">（选中自动填充）</span><button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:10px;padding:3px 10px" onclick="copyScript()">&#128203; 复制广播词</button></h3>
+      <h3>&#128218; 今日航班列表 <span style="font-weight:400;font-size:10px;margin-left:8px">（选中自动填充）</span>
+        <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:10px;padding:3px 10px" onclick="loadFromCloud(true)">&#128259; 刷新云端</button>
+        <button class="btn btn-outline btn-sm" style="font-size:10px;padding:3px 10px" onclick="copyScript()">&#128203; 复制广播词</button>
+      </h3>
       <input class="flight-search" id="flightSearch" placeholder="搜索航班号 / 目的地..." oninput="filterFlights()">
       <div class="flight-table-wrap">
         <table class="flight-table"><thead><tr><th>航班号</th><th>航司</th><th>目的地</th><th>登机口</th></tr></thead>
@@ -348,7 +351,7 @@ function lookupCity(code) {
 // ── 状态 ──
 let currentAirline = null, currentType = "boarding", currentLang = "zh";
 let flights = [], selectedFlightIdx = -1, excelData = null;
-let synth = window.speechSynthesis, speaking = false, voiceList = [];
+let synth = window.speechSynthesis, speaking = false, voiceList = [], cloudLoading = false;
 
 function loadVoices(){
   voiceList = synth ? synth.getVoices() : [];
@@ -660,11 +663,16 @@ function exportFlights(){
 }
 function saveFlightsToStorage(){try{localStorage.setItem("boarding_flights_v2",JSON.stringify(flights))}catch(e){}document.getElementById("flightCount").textContent=flights.length?`已加载 ${flights.length} 条航班`:"未导入航班数据";}
 function loadFlightsFromStorage(){try{const r=localStorage.getItem("boarding_flights_v2");if(r){flights=JSON.parse(r);flights.forEach(f=>{f.flightNo=cleanFlightNo(f.flightNo);f.destination=(f.destination||"").trim().toUpperCase();})}}catch(e){}renderFlightTable();document.getElementById("flightCount").textContent=flights.length?`已加载 ${flights.length} 条航班`:"未导入航班数据";}
+
 function renderFlightTable(ft){
   const tb=document.getElementById("flightTableBody");
   let list=flights;
   if(ft){const q=ft.toLowerCase();list=flights.filter(f=>f.flightNo.toLowerCase().includes(q)||f.destination.toLowerCase().includes(q)||(lookupCity(f.destination)||"").includes(q));}
-  if(!list.length){tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--sub);padding:24px;cursor:pointer" onclick="openImportModal()">${ft?"无匹配 — 点击重新导入":"暂无数据 — 点击导入 Excel / CSV / JSON"}</td></tr>`;return;}
+  if(!list.length){
+    // 区分："正在加载" vs "真没有数据"
+    if (cloudLoading) { tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--accent2);padding:28px">正在从云端同步航班数据...</td></tr>`; return; }
+    tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--sub);padding:24px;cursor:pointer" onclick="openImportModal()">${ft?"无匹配 — 点击重新导入":"暂无数据 — 点击导入 Excel / CSV / JSON<br><small style='color:var(--accent2)'>或点击右上角「刷新云端」加载共享数据</small>"}</td></tr>`;return;
+  }
   tb.innerHTML=list.map((f,i)=>{
     const orig=flights.indexOf(f),sel=orig===selectedFlightIdx?" selected":"";
     const city=lookupCity(f.destination)||f.destination;
@@ -706,27 +714,57 @@ function setTokenUI() {
   if (t && t.trim()) { localStorage.setItem("gh_token", t.trim()); alert("Token 已保存，可以使用云端同步了！"); }
 }
 
-async function loadFromCloud() {
+async function loadFromCloud(showFeedback = false) {
+  const statusEl = document.getElementById("statusText");
+  if (showFeedback) statusEl.textContent = "正在从云端加载...";
+  cloudLoading = true;
+  if (!showFeedback) renderFlightTable();
   try {
     const resp = await fetch(RAW_URL + "?t=" + Date.now());
-    if (!resp.ok) return;
+    if (!resp.ok) {
+      cloudLoading = false;
+      if (showFeedback) statusEl.textContent = "云端暂无数据，请先在电脑端点击「同步到云端」";
+      renderFlightTable();
+      return false;
+    }
     const cloudFlights = await resp.json();
-    if (!Array.isArray(cloudFlights) || !cloudFlights.length) return;
+    if (!Array.isArray(cloudFlights) || !cloudFlights.length) {
+      cloudLoading = false;
+      if (showFeedback) statusEl.textContent = "云端暂无数据";
+      renderFlightTable();
+      return false;
+    }
     cloudFlights.forEach(f => {
       f.flightNo = cleanFlightNo(f.flightNo || "");
       f.destination = (f.destination || "").trim().toUpperCase();
     });
+    // 云端数据覆盖本地同航班，保留云端独有的，也保留本地独有的
     const merged = new Map();
-    flights.forEach(f => merged.set(f.flightNo + "|" + f.destination, f));
-    cloudFlights.forEach(f => {
+    cloudFlights.forEach(f => merged.set(f.flightNo + "|" + f.destination, f));
+    flights.forEach(f => {
       const k = f.flightNo + "|" + f.destination;
       if (!merged.has(k)) merged.set(k, f);
     });
     flights = Array.from(merged.values());
+    cloudLoading = false;
     saveFlightsToStorage();
     renderFlightTable();
-    document.getElementById("statusText").textContent = `已从云端同步，共 ${flights.length} 条航班`;
-  } catch(e) { console.log("云端同步异常:", e); }
+    statusEl.textContent = `已加载 ${flights.length} 条航班（云端同步）`;
+    setTimeout(() => { if (statusEl.textContent.includes("云端同步")) statusEl.textContent = "就绪"; }, 3000);
+    return true;
+  } catch(e) {
+    cloudLoading = false;
+    if (showFeedback) statusEl.textContent = "云端连接失败，请检查网络";
+    renderFlightTable();
+    return false;
+  }
+}
+
+function textToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
 }
 
 async function syncToCloud() {
@@ -741,19 +779,21 @@ async function syncToCloud() {
       const getResp = await fetch(API_URL, { headers: { Authorization: `token ${getToken()}` } });
       if (getResp.ok) { const d = await getResp.json(); sha = d.sha; }
     } catch(e) {}
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(flights, null, 2))));
+    const content = textToBase64(JSON.stringify(flights, null, 2));
     const body = JSON.stringify({ message: `同步航班数据 - ${new Date().toLocaleString("zh-CN")}`, content, ...(sha ? { sha } : {}) });
     const putResp = await fetch(API_URL, { method: "PUT", headers: { Authorization: `token ${getToken()}`, "Content-Type": "application/json" }, body });
     if (putResp.ok) {
-      statusEl.textContent = `已同步 ${flights.length} 条航班到云端 ✓`;
+      statusEl.textContent = `已同步 ${flights.length} 条航班到云端`;
       setTimeout(() => { if (statusEl.textContent.includes("已同步")) statusEl.textContent = "就绪"; }, 3000);
     } else {
       const err = await putResp.json().catch(() => ({}));
-      throw new Error(err.message || "同步失败，请检查网络");
+      throw new Error(err.message || "同步失败，请检查网络或 Token");
     }
   } catch(e) { statusEl.textContent = "同步失败: " + e.message; }
 }
 
+// 初始化：先显示本地缓存，然后立即从云端拉取最新数据
+document.getElementById("statusText").textContent = "正在从云端同步航班数据...";
 init();
 loadFromCloud();
 </script>
