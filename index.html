@@ -173,6 +173,7 @@ body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);co
   <div class="status-bar">
     <span><span class="status-dot dot-ready" id="statusDot"></span><span id="statusText">就绪</span></span>
     <span id="clockDisplay"></span>
+    <span style="font-size:9px;color:var(--border)">v250531.3</span>
   </div>
 </div>
 <div class="modal-overlay" id="importModal">
@@ -701,8 +702,8 @@ speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
 const GITHUB_OWNER = "hao334058-sys";
 const GITHUB_REPO = "boarding-broadcast";
 const DATA_FILE = "data.json";
-// 使用 GitHub Pages 同域读取，避免 raw.githubusercontent.com 被墙
-const RAW_URL = `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/${DATA_FILE}`;
+// 使用 jsDelivr CDN 读取数据（国内有节点，比 github.io 更稳定）
+const RAW_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@main/${DATA_FILE}`;
 const API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`;
 
 function getToken() {
