@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>航空登机广播系统</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg:#0a0e17; --panel:#111827; --card:#1a2332; --accent:#3b82f6; --accent2:#06b6d4;
+  --text:#e2e8f0; --sub:#94a3b8; --border:#1e293b; --danger:#ef4444; --success:#10b981; --warn:#f59e0b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:220px;background:var(--panel);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:0 20px 20px;font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.logo span{font-size:24px}
+.nav-label{padding:10px 20px 6px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--sub)}
+.nav-item{padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);border-left:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--card);color:var(--accent);border-left-color:var(--accent)}
+.airline-item{padding:9px 20px;cursor:pointer;font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px;transition:all .15s}
+.airline-item:hover{background:var(--card);color:var(--text)}
+.airline-item.selected{color:var(--accent2);background:rgba(6,182,212,.08)}
+.airline-code{font-weight:700;font-size:11px;width:30px;flex-shrink:0}
+.import-section{padding:14px 20px;border-top:1px solid var(--border);margin-top:auto}
+.import-section .nav-label{padding:0 0 6px}
+.btn-import{display:block;width:100%;padding:7px;border:1px dashed var(--border);border-radius:6px;background:transparent;color:var(--sub);font-size:11px;cursor:pointer;text-align:center;margin-bottom:6px;font-family:inherit;transition:all .15s}
+.btn-import:hover{border-color:var(--accent2);color:var(--accent2)}
+.flight-count{font-size:10px;color:var(--sub);text-align:center}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel)}
+.header h2{font-size:15px;font-weight:600}
+.header .badge{font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(59,130,246,.15);color:var(--accent)}
+.content{flex:1;padding:20px 24px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px}
+.card.full{grid-column:1/-1}
+.card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--sub);margin-bottom:14px;cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+.card h3 .arrow{font-size:10px;transition:transform .2s;display:inline-block}
+.card h3 .arrow.open{transform:rotate(90deg)}
+.card-body{transition:all .2s}
+.card-body.collapsed{display:none}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.single{grid-template-columns:1fr}
+.form-group label{display:block;font-size:10px;color:var(--sub);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select{width:100%;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;font-family:inherit;transition:border .15s}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.dest-hint{font-size:11px;color:var(--accent2);margin-top:3px;min-height:16px}
+.btn-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.btn{padding:9px 18px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#2563eb}
+.btn-accent{background:var(--accent2);color:#000}.btn-accent:hover{background:#0891b2}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--sub)}
+.btn-sm{padding:5px 12px;font-size:10px}
+.script-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;grid-column:1/-1}
+.script-content{background:#060a10;border:1px solid var(--border);border-radius:8px;padding:18px 22px;font-size:13px;line-height:2;max-height:450px;overflow-y:auto;white-space:pre-wrap;font-family:'Segoe UI','Microsoft YaHei',monospace}
+.lang-tabs{display:flex;gap:4px;margin-bottom:10px}
+.lang-tab{padding:5px 14px;border-radius:20px;font-size:11px;cursor:pointer;background:var(--card);border:1px solid var(--border);color:var(--sub);transition:all .15s}
+.lang-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.status-bar{padding:6px 24px;background:var(--panel);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--sub)}
+.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot-ready{background:var(--success)}
+.dot-playing{background:var(--accent2);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.flight-table-wrap{max-height:420px;overflow-y:auto;margin-top:4px}
+.flight-table{width:100%;border-collapse:collapse;font-size:11px}
+.flight-table th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--sub);font-weight:600;font-size:9px;text-transform:uppercase;position:sticky;top:0;background:var(--card)}
+.flight-table td{padding:6px 8px;border-bottom:1px solid rgba(30,41,59,.5)}
+.flight-table tr.flight-row{cursor:pointer;transition:all .1s}
+.flight-table tr.flight-row:hover{background:rgba(6,182,212,.06)}
+.flight-table tr.flight-row.selected{background:rgba(6,182,212,.12);color:var(--accent2)}
+.flight-search{width:100%;padding:7px 10px;background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;outline:none;margin-bottom:6px;font-family:inherit}
+.flight-search:focus{border-color:var(--accent)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px;width:500px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:14px;margin-bottom:14px}
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:28px 16px;text-align:center;color:var(--sub);font-size:13px;cursor:pointer;transition:all .2s}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(64,150,255,.06);color:var(--accent)}
+.drop-icon{font-size:32px;margin-bottom:6px;opacity:.7}
+#excelStatus{text-align:center;margin-top:8px;font-size:12px;display:none}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+@media(max-width:900px){
+  .content{grid-template-columns:1fr}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:260px;z-index:200;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:199}
+  .sidebar-backdrop.show{display:block}
+  .hamburger{display:flex!important;align-items:center;justify-content:center;width:32px;height:32px;border:none;background:transparent;color:var(--text);font-size:20px;cursor:pointer;margin-right:10px;flex-shrink:0}
+  .btn-import-mobile{display:flex!important;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--accent2);font-size:16px;cursor:pointer;margin-left:auto;margin-right:6px;flex-shrink:0}
+  .modal{width:90vw!important;max-width:500px}
+  .flight-table-wrap{max-height:55vh}
+  #cardFlightInfo .card-body,#cardAirline .card-body{display:none}
+  #cardFlightInfo h3 .arrow,#cardAirline h3 .arrow{transform:rotate(0deg)}
+}
+</style>
+</head>
+<body>
+<script>
+// 缓存检测：如果加载的不是最新版本，强制刷新
+window.__APP_VERSION = "v250531.4";
+(function(){
+  var pv = localStorage.getItem("__boarding_app_ver");
+  if (pv && pv !== window.__APP_VERSION) {
+    localStorage.setItem("__boarding_app_ver", window.__APP_VERSION);
+    location.reload(true);
+  }
+  localStorage.setItem("__boarding_app_ver", window.__APP_VERSION);
+})();
+</script>
+<div class="sidebar">
+  <div class="logo"><span>&#9992;</span> BoardCast</div>
+  <div class="nav-group">
+    <div class="nav-label">广播类型</div>
+    <div class="nav-item active" data-type="boarding">&#128747; 登机广播</div>
+    <div class="nav-item" data-type="final">&#9200; 最后登机</div>
+    <div class="nav-item" data-type="delay">&#9888; 延误通知</div>
+    <div class="nav-item" data-type="gatechange">&#128257; 登机口变更</div>
+    <div class="nav-item" data-type="arrival">&#128748; 到达广播</div>
+  </div>
+  <div class="nav-group"><div class="nav-label">航司选择</div></div>
+  <div id="airlineList"></div>
+  <div class="import-section">
+    <div class="nav-label">航班数据</div>
+    <button class="btn-import" onclick="openImportModal()">导入 Excel / CSV / JSON</button>
+    <button class="btn-import" onclick="exportFlights()">导出航班数据</button>
+    <button class="btn-import" style="border-color:var(--accent2);color:var(--accent2)" onclick="syncToCloud()">☁ 同步到云端</button>
+    <div class="flight-count" id="flightCount">未导入航班数据</div>
+  </div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<div class="main">
+  <div class="header"><button class="hamburger" onclick="toggleSidebar()" style="display:none">&#9776;</button><button class="btn-import-mobile" onclick="openImportModal()" style="display:none">&#128194;</button><h2 id="pageTitle">&#128747; 登机广播</h2><span class="badge" id="airlineBadge">未选择航司</span><span style="font-size:9px;color:var(--border);margin-left:auto;opacity:0.6">v250531.4</span></div>
+  <div class="content">
+    <div class="card" id="cardFlightInfo">
+      <h3 onclick="toggleCard('cardFlightInfo')">&#128203; 航班信息 <span class="arrow open">&#9654;</span></h3>
+      <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label>航班号</label><input id="flightNo" placeholder="如 CZ3037" oninput="onFlightInput()"></div>
+        <div class="form-group"><label>登机口</label><input id="gate" placeholder="如 A12"></div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group"><label>目的地（三字代码）</label><input id="destCode" placeholder="如 ICN / SVO / ICN" oninput="onDestInput()"></div>
+        <div class="dest-hint" id="destHint"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-accent" onclick="generateScript()">&#9654; 生成广播词</button>
+        <button class="btn btn-primary" onclick="speakScript()">&#128266; 语音播报</button>
+        <button class="btn btn-outline" onclick="stopSpeak()">&#9209; 停止</button>
+        <button class="btn btn-outline btn-sm" onclick="copyScript()">&#128203; 复制</button>
+      </div>
+      </div>
+    </div>
+    <div class="card" id="cardAirline">
+      <h3 onclick="toggleCard('cardAirline')">&#9992; 当前航司 <span class="arrow open">&#9654;</span></h3>
+      <div class="card-body">
+      <div style="font-size:32px;font-weight:700;margin:6px 0 2px" id="airlineDisplay">--</div>
+      <div style="color:var(--sub);font-size:12px" id="airlineNameDisplay">请从菜单选择航司</div>
+      <div style="margin-top:10px;display:flex;gap:4px;flex-wrap:wrap" id="airlineTags"></div>
+      </div>
+    </div>
+    <div class="card full" id="flightListCard">
+      <h3>&#128218; 今日航班列表 <span style="font-weight:400;font-size:10px;margin-left:8px">（选中自动填充）</span>
+        <button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:10px;padding:3px 10px" onclick="loadFromCloud(true)">&#128259; 刷新云端</button>
+        <button class="btn btn-outline btn-sm" style="font-size:10px;padding:3px 10px" onclick="copyScript()">&#128203; 复制广播词</button>
+      </h3>
+      <input class="flight-search" id="flightSearch" placeholder="搜索航班号 / 目的地..." oninput="filterFlights()">
+      <div class="flight-table-wrap">
+        <table class="flight-table"><thead><tr><th>航班号</th><th>航司</th><th>目的地</th><th>登机口</th></tr></thead>
+          <tbody id="flightTableBody"><tr><td colspan="4" style="text-align:center;color:var(--sub);padding:28px;cursor:pointer" onclick="openImportModal()">暂无数据 — 点击导入 Excel / CSV / JSON</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="script-panel">
+      <div class="lang-tabs">
+        <span class="lang-tab active" data-lang="zh" onclick="switchLang(this)">中文</span>
+        <span class="lang-tab" data-lang="en" onclick="switchLang(this)">English</span>
+        <span class="lang-tab" data-lang="bilingual" onclick="switchLang(this)">双语</span>
+      </div>
+      <div class="script-content" id="scriptOutput">请选择航司并填写航班信息，点击「生成广播词」</div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span><span class="status-dot dot-ready" id="statusDot"></span><span id="statusText">就绪</span></span>
+    <span id="clockDisplay"></span>
+    <span style="font-size:9px;color:var(--border)">v250531.4</span>
+  </div>
+</div>
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <h3>导入航班数据 (Excel / CSV / JSON)</h3>
+    <div class="drop-zone" id="excelDropZone" onclick="document.getElementById('excelFileInput').click()">
+      <div class="drop-icon">📊</div>
+      <div>拖拽 .xlsx / .xls / .csv / .json 文件到此处，或点击选择</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">Excel/CSV 表头：flightNo | airlineCode | destination | gate</div>
+      <div style="font-size:11px;color:var(--sub)">JSON 格式：导出的航班数据文件</div>
+    </div>
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv,.json" style="display:none" onchange="handleExcelFile(event)">
+    <div id="excelStatus"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-accent" id="btnImport" onclick="doImport()" disabled>确认导入</button>
+      <button class="btn btn-outline" onclick="closeImportModal()">取消</button>
+      <button class="btn btn-outline btn-sm" onclick="clearFlights()">清空已有数据</button>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById("airlineList").parentElement.parentElement.classList.toggle("open");
+  document.getElementById("sidebarBackdrop").classList.toggle("show");
+}
+function closeSidebar(){
+  document.getElementById("airlineList").parentElement.parentElement.classList.remove("open");
+  document.getElementById("sidebarBackdrop").classList.remove("show");
+}
+function toggleCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const body = card.querySelector('.card-body');
+  const arrow = card.querySelector('h3 .arrow');
+  if (!body || !arrow) return;
+  body.classList.toggle('collapsed');
+  arrow.classList.toggle('open');
+}
+// ── 航司 ──
+const airlines = [
+  { code:"CZ", name:"中国南方航空", en:"China Southern", color:"#00539B" },
+  { code:"KE", name:"大韩航空", en:"Korean Air", color:"#004A9F" },
+  { code:"SV", name:"沙特航空", en:"Saudia", color:"#006C35" },
+  { code:"SU", name:"俄罗斯航空", en:"Aeroflot", color:"#003F8A" },
+  { code:"KC", name:"阿斯塔纳航空", en:"Air Astana", color:"#00A3AD" },
+  { code:"VN", name:"越南航空", en:"Vietnam Airlines", color:"#F2C819" },
+  { code:"CI", name:"中华航空", en:"China Airlines", color:"#D50032" },
+];
+
+// ── 全局清洗航班号：去除多余前缀/符号/空格 ──
+function cleanFlightNo(raw) {
+  const cleaned = (raw||"").trim().replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  const m = cleaned.match(/(CZ|KE|SV|SU|KC|VN|CI)\d+/);
+  return m ? m[0] : cleaned;
+}
+
+// ── 三字代码映射表 ──
+const airportMap = {
+  // === 中国(南航 CZ) ===
+  "CAN":"广州","SZX":"深圳","PKX":"北京大兴","PEK":"北京","PVG":"上海浦东","SHA":"上海虹桥",
+  "CKG":"重庆","CTU":"成都","TFU":"成都天府","WUH":"武汉","CSX":"长沙","KMG":"昆明",
+  "HGH":"杭州","NKG":"南京","XIY":"西安","TNA":"济南","TAO":"青岛","DLC":"大连",
+  "SHE":"沈阳","HRB":"哈尔滨","CGQ":"长春","FOC":"福州","XMN":"厦门","NNG":"南宁",
+  "URC":"乌鲁木齐","LHW":"兰州","HET":"呼和浩特","KWE":"贵阳","TYN":"太原","KHN":"南昌",
+  "WNZ":"温州","NGB":"宁波","HFE":"合肥","CGO":"郑州","SYX":"三亚","HAK":"海口",
+  "ZHA":"湛江","SWA":"揭阳","MIG":"绵阳","LJG":"丽江","DLU":"大理","JHG":"西双版纳",
+  "YNJ":"延吉","WEH":"威海","YNT":"烟台","LYI":"临沂","LZO":"泸州","WUX":"无锡",
+  "CZX":"常州","NTG":"南通","YTY":"扬州","HYN":"台州","JUZ":"衢州","YIW":"义乌",
+  "JJN":"泉州","LYG":"连云港","RIZ":"日照","DYG":"张家界","ENH":"恩施","WXN":"万州",
+  "ZUH":"珠海","MXZ":"梅州","SWA":"揭阳潮汕","HUZ":"惠州","SZX":"深圳","FUO":"佛山",
+  // === 韩国(大韩 KE) ===
+  "ICN":"首尔仁川","GMP":"首尔金浦","PUS":"釜山","CJU":"济州","TAE":"大邱",
+  "KWJ":"光州","CJJ":"清州","RSU":"丽水","USN":"蔚山","WJU":"原州","HIN":"泗川",
+  "KPO":"浦项","MWX":"务安","YNY":"襄阳",
+  // === 沙特(沙特 SV) ===
+  "JED":"吉达","RUH":"利雅得","DMM":"达曼","MED":"麦地那","AHB":"艾卜哈",
+  "TUU":"塔布克","TIF":"塔伊夫","HAS":"哈伊勒","ELQ":"卡西姆","AJF":"焦夫",
+  "GIZ":"吉赞","EAM":"奈季兰","RAE":"阿尔阿尔","URY":"古拉亚特","DWD":"达瓦迪米",
+  "SHW":"沙鲁拉","BHH":"比沙","AQI":"凯苏马",
+  // === 俄罗斯(俄航 SU) ===
+  "SVO":"莫斯科谢列梅捷沃","DME":"莫斯科多莫杰多沃","VKO":"莫斯科伏努科沃",
+  "LED":"圣彼得堡","KZN":"喀山","AER":"索契","VVO":"符拉迪沃斯托克",
+  "OVB":"新西伯利亚","SVX":"叶卡捷琳堡","KJA":"克拉斯诺亚尔斯克","UFA":"乌法",
+  "KUF":"萨马拉","ROV":"顿河畔罗斯托夫","MRV":"矿水城","KRR":"克拉斯诺达尔",
+  "AAQ":"阿纳帕","GDX":"马加丹","PKC":"堪察加彼得罗巴甫洛夫斯克","UUS":"南萨哈林斯克",
+  "KHV":"哈巴罗夫斯克","IKT":"伊尔库茨克","YKS":"雅库茨克","MMK":"摩尔曼斯克",
+  "ARH":"阿尔汉格尔斯克","CEK":"车里雅宾斯克","OMS":"鄂木斯克","GOJ":"下诺夫哥罗德",
+  "PEE":"彼尔姆","KGD":"加里宁格勒","SIP":"辛菲罗波尔","OGZ":"弗拉季高加索",
+  // === 哈萨克斯坦(阿斯塔纳 KC) ===
+  "NQZ":"阿斯塔纳","ALA":"阿拉木图","SCO":"阿克套","CIT":"奇姆肯特",
+  "AKX":"阿克托比","UKK":"厄斯克门","KGF":"卡拉干达","PWQ":"巴甫洛达尔",
+  "KSN":"库斯塔奈","URA":"乌拉尔斯克","PPK":"彼得罗巴甫洛夫斯克","TDZ":"塔拉兹",
+  "DMB":"塔拉兹","KZO":"克孜勒奥尔达","GUW":"阿特劳","PLX":"塞梅伊",
+  // === 越南(越南 VN) ===
+  "SGN":"胡志明市","HAN":"河内","DAD":"岘港","CXR":"芽庄","PQC":"富国岛",
+  "UIH":"归仁","HPH":"海防","VII":"荣市","BMV":"邦美蜀","DLI":"大叻",
+  "VCA":"芹苴","VCL":"茱莱","VCS":"昆岛","VDH":"洞海","HUI":"顺化",
+  "PXU":"波来古","TBB":"绥和","THD":"清化","VDO":"云屯",
+  // === 台湾(中华 CI) ===
+  "TPE":"台北桃园","TSA":"台北松山","KHH":"高雄","RMQ":"台中","TNN":"台南",
+  "HUN":"花莲","TTT":"台东","MZG":"马公","KNH":"金门","LZN":"南竿",
+  "MFK":"马祖北竿","CYI":"嘉义",
+  // === 日本 ===
+  "NRT":"东京成田","HND":"东京羽田","KIX":"大阪关西","ITM":"大阪伊丹","FUK":"福冈",
+  "CTS":"札幌新千岁","NGO":"名古屋中部","OKA":"冲绳那霸","KMQ":"小松","HIJ":"广岛",
+  "SDJ":"仙台","KOJ":"鹿儿岛","KIJ":"新潟","KMJ":"熊本","OIT":"大分","MYJ":"松山",
+  "TAK":"高松","KCZ":"高知","TOY":"富山","AOJ":"青森","AXT":"秋田","GAJ":"山形",
+  // === 东南亚 ===
+  "BKK":"曼谷素万那普","DMK":"曼谷廊曼","HKT":"普吉","CNX":"清迈","UTP":"芭提雅",
+  "KBV":"甲米","USM":"苏梅岛","HDY":"合艾","CEI":"清莱","SIN":"新加坡",
+  "KUL":"吉隆坡","PEN":"槟城","BKI":"哥打基纳巴卢","KCH":"古晋","LGK":"兰卡威",
+  "JHB":"新山","CGK":"雅加达","DPS":"巴厘岛","SUB":"泗水","MES":"棉兰",
+  "MNL":"马尼拉","CEB":"宿务","CRK":"克拉克","DVO":"达沃","PPS":"公主港",
+  "RGN":"仰光","MDL":"曼德勒","VTE":"万象","LPQ":"琅勃拉邦","PNH":"金边","REP":"暹粒",
+  // === 南亚 ===
+  "DEL":"德里","BOM":"孟买","MAA":"金奈","BLR":"班加罗尔","HYD":"海得拉巴",
+  "CCU":"加尔各答","AMD":"艾哈迈达巴德","COK":"科钦","TRV":"特里凡得琅","GOI":"果阿",
+  "KTM":"加德满都","MLE":"马累","CMB":"科伦坡","DAC":"达卡","PBH":"帕罗",
+  // === 中东 ===
+  "DXB":"迪拜","AUH":"阿布扎比","SHJ":"沙迦","DOH":"多哈","MCT":"马斯喀特",
+  "BAH":"巴林","KWI":"科威特","AMM":"安曼","BEY":"贝鲁特","DMM":"达曼",
+  "IKA":"德黑兰","THR":"德黑兰梅赫拉巴德","MHD":"马什哈德","SYZ":"设拉子","TBZ":"大不里士",
+  "IST":"伊斯坦布尔","SAW":"伊斯坦布尔萨比哈","ESB":"安卡拉","ADB":"伊兹密尔","AYT":"安塔利亚",
+  // === 中亚 ===
+  "TAS":"塔什干","FRU":"比什凯克","DYU":"杜尚别","ASB":"阿什哈巴德",
+  "SKD":"撒马尔罕","BHK":"布哈拉","NMA":"纳曼干","FEG":"费尔干纳","NCU":"努库斯",
+  // === 欧洲 ===
+  "LHR":"伦敦希思罗","LGW":"伦敦盖特威克","STN":"伦敦斯坦斯特德","MAN":"曼彻斯特",
+  "CDG":"巴黎戴高乐","ORY":"巴黎奥利","NCE":"尼斯","LYS":"里昂","MRS":"马赛",
+  "FRA":"法兰克福","MUC":"慕尼黑","TXL":"柏林","DUS":"杜塞尔多夫","HAM":"汉堡",
+  "AMS":"阿姆斯特丹","BRU":"布鲁塞尔","ZRH":"苏黎世","GVA":"日内瓦",
+  "FCO":"罗马","MXP":"米兰马尔彭萨","LIN":"米兰利纳特","VCE":"威尼斯","BLQ":"博洛尼亚",
+  "MAD":"马德里","BCN":"巴塞罗那","AGP":"马拉加","PMI":"帕尔马","ALC":"阿利坎特",
+  "LIS":"里斯本","OPO":"波尔图","FAO":"法鲁",
+  "VIE":"维也纳","SZG":"萨尔茨堡","PRG":"布拉格","BUD":"布达佩斯",
+  "WAW":"华沙","KRK":"克拉科夫","OTP":"布加勒斯特","SOF":"索菲亚",
+  "ATH":"雅典","SKG":"塞萨洛尼基","HER":"伊拉克利翁","RHO":"罗德岛",
+  "CPH":"哥本哈根","ARN":"斯德哥尔摩","OSL":"奥斯陆","HEL":"赫尔辛基","KEF":"雷克雅未克",
+  "DUB":"都柏林","EDI":"爱丁堡","GLA":"格拉斯哥","BFS":"贝尔法斯特",
+  "LUX":"卢森堡","MLA":"马耳他","TIV":"蒂瓦特","DBV":"杜布罗夫尼克","ZAG":"萨格勒布",
+  "BEG":"贝尔格莱德","LJU":"卢布尔雅那","TGD":"波德戈里察","SJJ":"萨拉热窝","SKP":"斯科普里",
+  "TBS":"第比利斯","EVN":"埃里温","BAK":"巴库","GYD":"巴库盖达尔",
+  // === 非洲 ===
+  "CAI":"开罗","HRG":"赫尔格达","SSH":"沙姆沙伊赫","LXR":"卢克索","ASW":"阿斯旺",
+  "ALG":"阿尔及尔","ORN":"奥兰","TUN":"突尼斯","CMN":"卡萨布兰卡","RAK":"马拉喀什",
+  "ADD":"亚的斯亚贝巴","NBO":"内罗毕","MBA":"蒙巴萨","DAR":"达累斯萨拉姆","ZNZ":"桑给巴尔",
+  "JNB":"约翰内斯堡","CPT":"开普敦","DUR":"德班","MRU":"毛里求斯","SEZ":"塞舌尔",
+  "LOS":"拉各斯","ABV":"阿布贾","ACC":"阿克拉","LAD":"罗安达","KRT":"喀土穆",
+  // === 北美 ===
+  "JFK":"纽约肯尼迪","EWR":"纽约纽瓦克","LGA":"纽约拉瓜迪亚","LAX":"洛杉矶",
+  "SFO":"旧金山","ORD":"芝加哥奥黑尔","MDW":"芝加哥中途","IAD":"华盛顿杜勒斯",
+  "BOS":"波士顿","SEA":"西雅图","DFW":"达拉斯","IAH":"休斯顿","ATL":"亚特兰大",
+  "MIA":"迈阿密","MCO":"奥兰多","LAS":"拉斯维加斯","PHX":"凤凰城","DEN":"丹佛",
+  "DTW":"底特律","MSP":"明尼阿波利斯","SAN":"圣地亚哥","PDX":"波特兰","HNL":"檀香山",
+  "YYZ":"多伦多","YVR":"温哥华","YUL":"蒙特利尔","YYC":"卡尔加里","YEG":"埃德蒙顿",
+  "YOW":"渥太华","YHZ":"哈利法克斯","YWG":"温尼伯",
+  "MEX":"墨西哥城","CUN":"坎昆","GDL":"瓜达拉哈拉","MTY":"蒙特雷",
+  // === 南美 ===
+  "GRU":"圣保罗","GIG":"里约热内卢","EZE":"布宜诺斯艾利斯","SCL":"圣地亚哥",
+  "BOG":"波哥大","LIM":"利马","UIO":"基多","MVD":"蒙得维的亚","ASU":"亚松森",
+  // === 大洋洲 ===
+  "SYD":"悉尼","MEL":"墨尔本","BNE":"布里斯班","PER":"珀斯","ADL":"阿德莱德",
+  "OOL":"黄金海岸","CNS":"凯恩斯","DRW":"达尔文","HBA":"霍巴特",
+  "AKL":"奥克兰","WLG":"惠灵顿","CHC":"基督城","ZQN":"皇后镇","NAN":"楠迪",
+  "NOU":"努美阿","PPT":"帕皮提",
+  // === 西亚 ===
+  "TLV":"特拉维夫","ETM":"埃拉特","AMM":"安曼","AQJ":"亚喀巴",
+  "BGW":"巴格达","BSR":"巴士拉","EBL":"埃尔比勒",
+};
+
+function lookupCity(code) {
+  const c = code.toUpperCase().trim();
+  return airportMap[c] || null;
+}
+
+// ── 状态 ──
+let currentAirline = null, currentType = "boarding", currentLang = "zh";
+let flights = [], selectedFlightIdx = -1, excelData = null;
+let synth = window.speechSynthesis, speaking = false, voiceList = [], cloudLoading = false;
+
+function loadVoices(){
+  voiceList = synth ? synth.getVoices() : [];
+}
+if(synth) {
+  loadVoices();
+  synth.onvoiceschanged = loadVoices;
+}
+
+function init() {
+  const list = document.getElementById("airlineList");
+  airlines.forEach(a => {
+    const d = document.createElement("div");
+    d.className = "airline-item";
+    d.onclick = () => selectAirline(a, d);
+    d.innerHTML = `<span class="airline-code">${a.code}</span>${a.name}`;
+    list.appendChild(d);
+  });
+  document.querySelectorAll(".nav-item").forEach(el => {
+    el.onclick = () => {
+      closeSidebar();
+      document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+      el.classList.add("active");
+      currentType = el.dataset.type;
+      document.getElementById("pageTitle").innerHTML = el.innerHTML;
+      generateScript();
+    };
+  });
+  updateClock(); setInterval(updateClock, 1000);
+  loadFlightsFromStorage();
+  setupDragDrop();
+}
+function updateClock() {
+  document.getElementById("clockDisplay").textContent = new Date().toLocaleString("zh-CN",{hour12:false});
+}
+
+function selectAirline(a, el) {
+  closeSidebar();
+  currentAirline = a;
+  document.querySelectorAll(".airline-item").forEach(x=>x.classList.remove("selected"));
+  el.classList.add("selected");
+  document.getElementById("airlineBadge").textContent = a.code + " " + a.name;
+  document.getElementById("airlineBadge").style.background = a.color + "22";
+  document.getElementById("airlineBadge").style.color = a.color;
+  document.getElementById("airlineDisplay").textContent = a.code;
+  document.getElementById("airlineDisplay").style.color = a.color;
+  document.getElementById("airlineNameDisplay").textContent = a.en + " · " + a.name;
+  document.getElementById("airlineTags").innerHTML = `<span style="font-size:10px;padding:3px 8px;border-radius:12px;background:${a.color}22;color:${a.color}">${a.code}</span><span style="font-size:10px;padding:3px 8px;border-radius:12px;background:var(--card);color:var(--sub)">${a.en}</span>`;
+  generateScript();
+}
+
+function onDestInput() {
+  const code = document.getElementById("destCode").value.trim();
+  const hint = document.getElementById("destHint");
+  if (!code) { hint.textContent = ""; return; }
+  const city = lookupCity(code);
+  hint.textContent = city ? `→ ${city}` : "未识别该三字代码";
+  hint.style.color = city ? "var(--accent2)" : "var(--warn)";
+}
+
+function onFlightInput() {
+  const raw = document.getElementById("flightNo").value.trim();
+  if (!raw) return;
+  const cleaned = cleanFlightNo(raw);
+  const code = cleaned.match(/^(CZ|KE|SV|SU|KC|VN|CI)/);
+  if (!code) return;
+  const a = airlines.find(x => x.code === code[1]);
+  if (!a) return;
+  document.querySelectorAll(".airline-item").forEach(el => {
+    if (el.querySelector(".airline-code").textContent === a.code) {
+      selectAirline(a, el);
+    }
+  });
+}
+
+function getDestFull() {
+  const code = document.getElementById("destCode").value.trim();
+  const city = lookupCity(code);
+  return { code: code.toUpperCase(), city: city || code };
+}
+
+function generateScript() {
+  const dest = getDestFull();
+  const gate = document.getElementById("gate").value || "—";
+  const flightNo = document.getElementById("flightNo").value || "";
+  // 如果未选航司，从航班号自动识别
+  if(!currentAirline){const m=cleanFlightNo(flightNo).match(/^(CZ|KE|SV|SU|KC|VN|CI)/);if(m){const a=airlines.find(x=>x.code===m[1]);if(a)currentAirline=a;}}
+  const flight = flightNo || "XX0000";
+  const al = currentAirline ? { zh: currentAirline.name, en: currentAirline.en } : { zh: "航空公司", en: "the airline" };
+  const destName = dest.city;
+  const destEn = dest.code;
+
+  // 格式化航班号：CZ3037 → CZ ^3^0^3^7
+  const fmtFlight = (() => {
+    const m = flightNo.match(/^([A-Z]{2})(\d+)$/);
+    return m ? m[1] + " ^" + m[2].split("").join("^") : flightNo;
+  })();
+  // 格式化登机口：A172 → A^1^7^2
+  const fmtGate = (() => {
+    const m = (gate||"").match(/^([A-Z]?)(\d+)$/);
+    return m ? (m[1]||"") + "^" + m[2].split("").join("^") : gate;
+  })();
+
+  const scripts = {
+    boarding: {
+      zh: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），现在，开始登机，请携带好您的随身行李物品，前往登机口 ${fmtGate} 登机，祝您旅途愉快。`,
+
+      en: `【${al.en} Boarding Announcement】
+
+Ladies and gentlemen, may I have your attention please. ${al.en} flight ${flight} to ${destName} (${destEn}) is now ready for boarding.
+
+Passengers for flight ${flight}, please proceed to Gate ${gate} with your boarding pass and carry-on luggage.
+
+${al.en} wishes you a pleasant journey. Thank you.`,
+
+      bilingual: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），现在，开始登机，请携带好您的随身行李物品，前往登机口 ${fmtGate} 登机，祝您旅途愉快。
+
+Ladies and gentlemen, ${al.en} flight ${flight} to ${destName} (${destEn}) is now boarding. Please proceed to Gate ${gate} with your boarding pass. ${al.en} wishes you a pleasant journey.`
+    },
+    final: {
+      zh: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），这是最后一次登机广播，请尚未登机的旅客立即前往登机口 ${fmtGate} 登机，登机口即将关闭。`,
+
+      en: `【${al.en} Final Boarding Call】
+
+This is the final boarding call for ${al.en} flight ${flight} to ${destName} (${destEn}).
+
+All remaining passengers please proceed to Gate ${gate} immediately. The gate will be closing shortly.
+
+Thank you.`,
+
+      bilingual: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），这是最后一次登机广播，请立即前往登机口 ${fmtGate} 登机，登机口即将关闭。
+
+This is the final boarding call for ${al.en} flight ${flight} to ${destName} (${destEn}). Please proceed to Gate ${gate} immediately. Thank you.`
+    },
+    delay: {
+      zh: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），我们抱歉地通知您，因故不能按时起飞，请您在候机厅休息等候，我们将在获得最新信息后第一时间通知您，谢谢您的理解与配合。`,
+
+      en: `【${al.en} Flight Delay Notice】
+
+Ladies and gentlemen, we regret to inform you that ${al.en} flight ${flight} to ${destName} (${destEn}) has been delayed.
+
+Please remain in the waiting area. We will update you as soon as more information becomes available.
+
+${al.en} sincerely apologizes for any inconvenience. Thank you for your understanding.`,
+
+      bilingual: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），因故不能按时起飞，请在候机厅等候，有最新信息将第一时间通知您，感谢您的理解。
+
+${al.en} flight ${flight} to ${destName} (${destEn}) has been delayed. Please remain in the waiting area for further updates. Thank you for your understanding.`
+    },
+    gatechange: {
+      zh: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），登机口已变更，请前往新的登机口候机，对此变更给您带来的不便深表歉意，谢谢。`,
+
+      en: `【${al.en} Gate Change Notice】
+
+Ladies and gentlemen, for ${al.en} flight ${flight} to ${destName} (${destEn}), the boarding gate has been changed.
+
+Please proceed to the new gate. We apologize for any inconvenience caused. Thank you.`,
+
+      bilingual: `乘坐${al.zh}，${fmtFlight}次航班，前往（${destName}），登机口已变更，请前往新的登机口候机，对此变更给您带来的不便深表歉意。
+
+${al.en} flight ${flight} to ${destName} (${destEn}), the gate has been changed. Please proceed to the new gate. We apologize for any inconvenience.`
+    },
+    arrival: {
+      zh: `乘坐${al.zh}，${fmtFlight}次航班，已抵达（${destName}），飞机正在滑行中，请您在座位上坐好并系好安全带，待飞机完全停稳后再起身，感谢您选乘本次航班，祝您在${destName}愉快。`,
+
+      en: `【${al.en} Arrival Announcement】
+
+Ladies and gentlemen, welcome to ${destName}. ${al.en} flight ${flight} has now arrived.
+
+Please remain seated with your seatbelt fastened until the aircraft has come to a complete stop.
+
+Thank you for flying with ${al.en}. We look forward to serving you again. Enjoy your stay.`,
+
+      bilingual: `乘坐${al.zh}，${fmtFlight}次航班，已抵达（${destName}），请系好安全带，待飞机完全停稳后再起身，感谢您选乘本次航班。
+
+${al.en} flight ${flight} has arrived at ${destName} (${destEn}). Please remain seated until the aircraft has come to a complete stop. Thank you for flying with ${al.en}.`
+    }
+  };
+  const s = scripts[currentType];
+  document.getElementById("scriptOutput").textContent = s[currentLang] || s.zh;
+  document.getElementById("statusText").textContent = "广播词已生成";
+}
+
+function switchLang(el) {
+  document.querySelectorAll(".lang-tab").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+  currentLang = el.dataset.lang;
+  generateScript();
+}
+function speakScript() {
+  if(!synth){alert("当前设备不支持语音播报");return;}
+  synth.cancel();
+  const t = document.getElementById("scriptOutput").textContent;
+  if (!t || t.includes("请选择航司")) { alert("请先生成广播词"); return; }
+  // 确保 voices 已加载
+  if(!voiceList.length) loadVoices();
+
+  // 按语言拆分：双语模式逐句朗读
+  const texts = currentLang === "bilingual" ? t.split("\n").filter(s=>s.trim()) : [t];
+
+  const speakNext = (i) => {
+    if(i >= texts.length){ speaking=false; document.getElementById("statusDot").className="status-dot dot-ready"; document.getElementById("statusText").textContent="播报完毕"; return; }
+    const isZh = /[\u4e00-\u9fa5]/.test(texts[i].substring(0,20));
+    const u = new SpeechSynthesisUtterance(texts[i]);
+    u.lang = isZh ? "zh-CN" : "en-US";
+    // 优先匹配本地语音
+    const v = voiceList.find(x=>x.lang.startsWith(isZh?"zh":"en"));
+    if(v) u.voice = v;
+    u.rate = 0.88; u.pitch = 1; u.volume = 1;
+    u.onstart = ()=>{speaking=true;document.getElementById("statusDot").className="status-dot dot-playing";document.getElementById("statusText").textContent=`播报中 (${i+1}/${texts.length})...`;};
+    u.onend = ()=>speakNext(i+1);
+    u.onerror = (e)=>{if(e.error!=="interrupted"){speaking=false;document.getElementById("statusDot").className="status-dot dot-ready";document.getElementById("statusText").textContent="播报出错";}};
+    synth.speak(u);
+  };
+  speakNext(0);
+}
+function stopSpeak(){synth.cancel();speaking=false;document.getElementById("statusDot").className="status-dot dot-ready";document.getElementById("statusText").textContent="就绪";}
+function copyScript(){navigator.clipboard.writeText(document.getElementById("scriptOutput").textContent).then(()=>{document.getElementById("statusText").textContent="已复制";setTimeout(()=>document.getElementById("statusText").textContent="就绪",2000)});}
+function copyFlightList(){
+  if(!flights.length){alert("无航班数据可复制");return;}
+  const text = "航班号\t航司\t目的地\t登机口\n" + flights.map(f=>{
+    const city = lookupCity(f.destination)||f.destination;
+    return [f.flightNo, f.airlineCode||"", city, f.gate||""].join("\t");
+  }).join("\n");
+  navigator.clipboard.writeText(text).then(()=>{
+    document.getElementById("statusText").textContent=`已复制 ${flights.length} 条航班`;
+    setTimeout(()=>document.getElementById("statusText").textContent="就绪",2000);
+  });
+}
+
+// ── 导入 ──
+function openImportModal(){
+  closeSidebar();
+  document.getElementById("importModal").classList.add("show");
+  excelData=null;document.getElementById("excelStatus").style.display="none";
+  document.getElementById("excelFileInput").value="";document.getElementById("btnImport").disabled=true;
+}
+function closeImportModal(){document.getElementById("importModal").classList.remove("show");}
+function handleExcelFile(e){const f=e.target.files[0];if(!f)return;if(f.name.endsWith(".json")){parseJsonFile(f)}else{parseExcel(f)}}
+function parseJsonFile(file){
+  const st=document.getElementById("excelStatus"),bt=document.getElementById("btnImport");
+  st.style.display="block";st.textContent="正在解析...";st.style.color="var(--sub)";
+  const r=new FileReader();
+  r.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data)){st.textContent="JSON 格式错误：需要航班数组";st.style.color="var(--danger)";return;}
+      excelData=data.map(f=>({
+        flightNo:cleanFlightNo(String(f.flightNo||"").trim()),
+        airlineCode:String(f.airlineCode||"").trim(),
+        destination:String(f.destination||"").trim().toUpperCase(),
+        gate:String(f.gate||"").trim()
+      })).filter(f=>f.flightNo&&f.destination);
+      if(excelData.length===0){st.textContent="无有效记录";st.style.color="var(--danger)";excelData=null;return;}
+      st.textContent=`已识别 ${excelData.length} 条航班，点击「确认导入」`;st.style.color="var(--accent)";bt.disabled=false;
+    }catch(err){st.textContent="JSON 解析失败："+err.message;st.style.color="var(--danger)";}
+  };
+  r.readAsText(file);
+}
+function parseExcel(file){
+  const st=document.getElementById("excelStatus"),bt=document.getElementById("btnImport");
+  st.style.display="block";st.textContent="正在解析...";st.style.color="var(--sub)";
+  const r=new FileReader();
+  r.onload=function(ev){
+    try{
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+      if(!rows||rows.length<2){st.textContent="文件为空";st.style.color="var(--danger)";return;}
+      const h=rows[0].map(x=>String(x).trim());
+      const ix={flightNo:h.indexOf("flightNo"),airlineCode:h.indexOf("airlineCode"),destination:h.indexOf("destination"),gate:h.indexOf("gate")};
+      if(ix.flightNo<0||ix.destination<0){st.textContent="缺少 flightNo/destination 列，表头："+h.join(", ");st.style.color="var(--danger)";return;}
+      excelData=rows.slice(1).map(r=>({
+        flightNo:cleanFlightNo(String(r[ix.flightNo]||"").trim()),
+        airlineCode:String(r[ix.airlineCode]||"").trim(),
+        destination:String(r[ix.destination]||"").trim(),
+        gate:String(r[ix.gate]||"").trim()
+      })).filter(f=>f.flightNo&&f.destination);
+      if(excelData.length===0){st.textContent="无有效记录";st.style.color="var(--danger)";excelData=null;return;}
+      st.textContent=`已识别 ${excelData.length} 条航班，点击「确认导入」`;st.style.color="var(--accent)";bt.disabled=false;
+    }catch(err){st.textContent="解析失败："+err.message;st.style.color="var(--danger)";}
+  };
+  r.readAsArrayBuffer(file);
+}
+function setupDragDrop(){
+  const dz=document.getElementById("excelDropZone");
+  if(!dz)return;
+  ["dragenter","dragover"].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add("drag-over")}));
+  ["dragleave","drop"].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove("drag-over")}));
+  dz.addEventListener("drop",ev=>{ev.preventDefault();const f=ev.dataTransfer.files[0];if(!f)return;if(f.name.endsWith(".json")){parseJsonFile(f)}else{parseExcel(f)}});
+}
+function doImport(){
+  if(!excelData||excelData.length===0){alert("请先选择文件");return;}
+  const m=new Map();
+  flights.forEach(f=>m.set(f.flightNo+"|"+f.destination,f));
+  excelData.forEach(f=>m.set(f.flightNo+"|"+f.destination,f));
+  flights=Array.from(m.values());
+  saveFlightsToStorage();renderFlightTable();closeImportModal();
+  document.getElementById("statusText").textContent=`已导入 ${excelData.length} 条航班`;
+}
+function clearFlights(){flights=[];selectedFlightIdx=-1;saveFlightsToStorage();renderFlightTable();document.getElementById("flightCount").textContent="未导入航班数据";}
+function exportFlights(){
+  closeSidebar();
+  if(!flights.length){alert("没有航班数据可导出");return;}
+  const blob=new Blob([JSON.stringify(flights,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="航班数据_"+new Date().toISOString().slice(0,10)+".json";a.click();
+  URL.revokeObjectURL(a.href);
+  document.getElementById("statusText").textContent=`已导出 ${flights.length} 条航班`;
+}
+function saveFlightsToStorage(){try{localStorage.setItem("boarding_flights_v2",JSON.stringify(flights))}catch(e){}document.getElementById("flightCount").textContent=flights.length?`已加载 ${flights.length} 条航班`:"未导入航班数据";}
+function loadFlightsFromStorage(){try{const r=localStorage.getItem("boarding_flights_v2");if(r){flights=JSON.parse(r);flights.forEach(f=>{f.flightNo=cleanFlightNo(f.flightNo);f.destination=(f.destination||"").trim().toUpperCase();})}}catch(e){}renderFlightTable();document.getElementById("flightCount").textContent=flights.length?`已加载 ${flights.length} 条航班`:"未导入航班数据";}
+
+function renderFlightTable(ft){
+  const tb=document.getElementById("flightTableBody");
+  let list=flights;
+  if(ft){const q=ft.toLowerCase();list=flights.filter(f=>f.flightNo.toLowerCase().includes(q)||f.destination.toLowerCase().includes(q)||(lookupCity(f.destination)||"").includes(q));}
+  if(!list.length){
+    // 区分："正在加载" vs "真没有数据"
+    if (cloudLoading) { tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--accent2);padding:28px">正在从云端同步航班数据...</td></tr>`; return; }
+    tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--sub);padding:24px;cursor:pointer" onclick="openImportModal()">${ft?"无匹配 — 点击重新导入":"暂无数据 — 点击导入 Excel / CSV / JSON<br><small style='color:var(--accent2)'>或点击右上角「刷新云端」加载共享数据</small>"}</td></tr>`;return;
+  }
+  tb.innerHTML=list.map((f,i)=>{
+    const orig=flights.indexOf(f),sel=orig===selectedFlightIdx?" selected":"";
+    const city=lookupCity(f.destination)||f.destination;
+    return`<tr class="flight-row${sel}" onclick="selectFlight(${orig})"><td><strong>${f.flightNo}</strong></td><td>${f.airlineCode||""}</td><td>${city}</td><td>${f.gate||""}</td></tr>`;
+  }).join("");
+}
+function selectFlight(idx){
+  selectedFlightIdx=idx;const f=flights[idx];if(!f)return;
+  document.getElementById("flightNo").value=f.flightNo||"";
+  document.getElementById("destCode").value=f.destination||"";
+  document.getElementById("gate").value=f.gate||"";
+  onDestInput();
+  // 优先用数据中的航司代码，否则从航班号自动识别
+  let code=f.airlineCode;
+  if(!code){const m=cleanFlightNo(f.flightNo).match(/^(CZ|KE|SV|SU|KC|VN|CI)/);if(m)code=m[1];}
+  const a=airlines.find(x=>x.code===code);
+  if(a){document.querySelectorAll(".airline-item").forEach(el=>{if(el.querySelector(".airline-code").textContent===a.code)selectAirline(a,el)});}
+  renderFlightTable(document.getElementById("flightSearch")?.value||"");
+  generateScript();
+  document.getElementById("statusText").textContent=`已选择: ${f.flightNo} → ${lookupCity(f.destination)||f.destination}`;
+}
+function filterFlights(){renderFlightTable(document.getElementById("flightSearch").value);}
+speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
+
+// ── 云端同步 ──
+const GITHUB_OWNER = "hao334058-sys";
+const GITHUB_REPO = "boarding-broadcast";
+const DATA_FILE = "data.json";
+// 使用 jsDelivr CDN 读取数据（国内有节点，比 github.io 更稳定）
+const RAW_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@main/${DATA_FILE}`;
+const API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE}`;
+
+function getToken() {
+  return localStorage.getItem("gh_token") || "";
+}
+
+function setTokenUI() {
+  if (getToken()) return;
+  const t = prompt("请输入 GitHub Token 以启用云端同步（仅需设置一次）：", "");
+  if (t && t.trim()) { localStorage.setItem("gh_token", t.trim()); alert("Token 已保存，可以使用云端同步了！"); }
+}
+
+async function loadFromCloud(showFeedback = false) {
+  const statusEl = document.getElementById("statusText");
+  if (showFeedback) statusEl.textContent = "正在从云端加载...";
+  cloudLoading = true;
+  if (!showFeedback) renderFlightTable();
+  try {
+    const resp = await fetch(RAW_URL + "?t=" + Date.now());
+    if (!resp.ok) {
+      cloudLoading = false;
+      if (showFeedback) statusEl.textContent = "云端暂无数据，请先在电脑端点击「同步到云端」";
+      renderFlightTable();
+      return false;
+    }
+    const cloudFlights = await resp.json();
+    if (!Array.isArray(cloudFlights) || !cloudFlights.length) {
+      cloudLoading = false;
+      if (showFeedback) statusEl.textContent = "云端暂无数据";
+      renderFlightTable();
+      return false;
+    }
+    cloudFlights.forEach(f => {
+      f.flightNo = cleanFlightNo(f.flightNo || "");
+      f.destination = (f.destination || "").trim().toUpperCase();
+    });
+    // 云端数据覆盖本地同航班，保留云端独有的，也保留本地独有的
+    const merged = new Map();
+    cloudFlights.forEach(f => merged.set(f.flightNo + "|" + f.destination, f));
+    flights.forEach(f => {
+      const k = f.flightNo + "|" + f.destination;
+      if (!merged.has(k)) merged.set(k, f);
+    });
+    flights = Array.from(merged.values());
+    cloudLoading = false;
+    saveFlightsToStorage();
+    renderFlightTable();
+    statusEl.textContent = `已加载 ${flights.length} 条航班（云端同步）`;
+    setTimeout(() => { if (statusEl.textContent.includes("云端同步")) statusEl.textContent = "就绪"; }, 3000);
+    return true;
+  } catch(e) {
+    cloudLoading = false;
+    if (showFeedback) statusEl.textContent = "云端连接失败，请检查网络";
+    renderFlightTable();
+    return false;
+  }
+}
+
+function textToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
+async function syncToCloud() {
+  const token = getToken();
+  if (!token) { setTokenUI(); if (!getToken()) return; }
+  if (!flights.length) { alert("没有航班数据可同步"); return; }
+  const statusEl = document.getElementById("statusText");
+  statusEl.textContent = "正在同步到云端...";
+  try {
+    let sha = null;
+    try {
+      const getResp = await fetch(API_URL, { headers: { Authorization: `token ${getToken()}` } });
+      if (getResp.ok) { const d = await getResp.json(); sha = d.sha; }
+    } catch(e) {}
+    const content = textToBase64(JSON.stringify(flights, null, 2));
+    const body = JSON.stringify({ message: `同步航班数据 - ${new Date().toLocaleString("zh-CN")}`, content, ...(sha ? { sha } : {}) });
+    const putResp = await fetch(API_URL, { method: "PUT", headers: { Authorization: `token ${getToken()}`, "Content-Type": "application/json" }, body });
+    if (putResp.ok) {
+      statusEl.textContent = `已同步 ${flights.length} 条航班到云端`;
+      setTimeout(() => { if (statusEl.textContent.includes("已同步")) statusEl.textContent = "就绪"; }, 3000);
+    } else {
+      const err = await putResp.json().catch(() => ({}));
+      throw new Error(err.message || "同步失败，请检查网络或 Token");
+    }
+  } catch(e) { statusEl.textContent = "同步失败: " + e.message; }
+}
+
+// 初始化：先显示本地缓存，然后立即从云端拉取最新数据
+document.getElementById("statusText").textContent = "正在从云端同步航班数据...";
+init();
+loadFromCloud();
+</script>
+</body>
+</html>
