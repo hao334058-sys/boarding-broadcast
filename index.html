@@ -707,8 +707,6 @@ function setTokenUI() {
 }
 
 async function loadFromCloud() {
-  const token = getToken();
-  if (!token) return;
   try {
     const resp = await fetch(RAW_URL + "?t=" + Date.now());
     if (!resp.ok) return;
